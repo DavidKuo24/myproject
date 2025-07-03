@@ -1,0 +1,28 @@
+命令,描述
+git init,初始化一個新的 Git 儲存庫。
+git status,檢查當前工作目錄和暫存區的狀態。
+git log,查看提交歷史。
+git add <file>,將文件添加到暫存區，準備提交。
+git commit -m 'message',提交更改並附上提交訊息。
+git reset,將文件從暫存區移除，但保留更改。
+git diff,顯示工作目錄和暫存區之間的變更。
+git branch,列出所有分支。
+git checkout <branch-name>,切換到另一個分支。
+git checkout -b <branch-name>,創建並切換到新分支。
+git branch -d <branch-name>,刪除本地分支。
+git merge <branch-name>,將另一個分支合併到當前分支。
+git remote -v,顯示與專案相關的遠端儲存庫。
+git remote add origin <remote-url>,添加遠端儲存庫。
+git pull origin <branch-name>,從遠端儲存庫拉取變更並合併。
+git push origin <branch-name>,將本地變更推送到遠端儲存庫。
+git push -u origin <branch-name>,推送新分支到遠端儲存庫並設置上游。
+git push origin --delete <branch-name>,刪除遠端分支。
+git restore <file>,恢復最後一次提交的文件。
+git rm <file>,從工作目錄和暫存區中移除文件。
+git rm --cached <file>,僅從 Git 跟蹤中移除文件，保留本地文件。
+git config --list,列出所有 Git 設置。
+git config --global user.name 'Your Name',設置全局 Git 用戶名。
+git config --global user.email 'youremail@example.com',設置全局 Git 郵箱。
+git remote show origin,顯示遠端儲存庫的詳細信息。
+git tag <tag-name>,創建一個新的標籤。
+git push origin <tag-name>,將標籤推送到遠端儲存庫。
