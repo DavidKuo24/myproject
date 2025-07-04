@@ -7,29 +7,45 @@ def get_cpbl_player_stats(player_name):
     從中華職棒官網 (cpbl.com.tw) 爬取指定球員的生涯成績。
     """
     # CPBL 官網的球員搜尋頁面
-    search_url = f"https://www.cpbl.com.tw/player/search?name={player_name}"
+    search_url = f"https://www.cpbl.com.tw/player/search"
     base_url = "https://www.cpbl.com.tw"
 
+    # 使用 Session 物件來保持連線狀態，並設定更完整的 headers 模擬瀏覽器
+    session = requests.Session()
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+        "Accept-Language": "zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7",
+        "Referer": "https://www.cpbl.com.tw/", # 告訴伺服器我們是從官網首頁來的
     }
+    session.headers.update(headers)
 
     print(f"正在搜尋球員：{player_name}...")
 
     try:
-        # 第一步：訪問搜尋頁面，取得球員個人頁面的連結
-        response = requests.get(search_url, headers=headers)
+        # --- 模擬真實使用者瀏覽的兩步驟流程 ---
+
+        # 第一步：先用 GET 請求訪問搜尋頁面，以取得必要的 session cookies
+        print("正在訪問搜尋頁面以建立連線...")
+        initial_response = session.get(search_url)
+        initial_response.raise_for_status() # 確保第一步請求成功
+        print("連線建立成功，正在提交搜尋...")
+
+        # 第二步：在同一個 session 中，使用 POST 請求提交搜尋表單
+        search_payload = {
+            'name': player_name,
+            'order': '1'
+        }
+        response = session.post(search_url, data=search_payload)
         response.raise_for_status()
         soup = BeautifulSoup(response.text, 'html.parser')
 
-        # 尋找搜尋結果中的第一個球員連結
-        player_link_element = soup.find('div', class_='player_info_name')
+        # 尋找搜尋結果中的球員連結 (根據經驗，class name 可能是 PlayerListBlock)
+        player_link_element = soup.find('div', class_='PlayerListBlock')
         if not player_link_element or not player_link_element.find('a'):
-            print(f"錯誤：在搜尋結果頁面上，找不到預期的 HTML 元素 ('div', class_='player_info_name')。")
-            print("這可能是因為官網的 HTML 結構已經變更。")
-            print("--- 以下是目前頁面的完整 HTML 內容，請檢查：---")
-            print(soup.prettify()) # 使用 prettify() 讓 HTML 更易讀
-            print("-----------------------------------------------------")
+            print(f"錯誤：找不到名為 '{player_name}' 的球員。請檢查姓名是否正確或網站結構已變更。")
+            print("--- 以下為回傳的 HTML，以供除錯 ---")
+            print(soup.prettify())
             sys.exit(1)
         
         player_page_url = base_url + player_link_element.find('a')['href']
