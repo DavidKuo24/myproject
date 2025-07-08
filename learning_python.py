@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -#
+# -*- coding: utf-8 -*-
 # 這是註解，Python 會忽略它
 
 # 1. 變數 (Variables)
@@ -125,3 +125,123 @@ elif score >= 500 and score <= 1000:
     print("您是高級玩家。")
 else:
     print("繼續努力！")
+
+# --- 遊戲庫檢查練習 ---
+print("\n--- 遊戲庫檢查練習 ---\n")
+
+my_games = ["魔物獵人", "柏德之門3", "鬥陣特攻", "巫師3"]
+print(f"我的遊戲庫: {my_games}")
+
+if "鬥陣特攻" in my_games:
+    print("您已經擁有這款遊戲了！")
+else:
+    print("哦？這款遊戲不在您的收藏中。")
+
+# --- 6. 迴圈 (Loops) ---
+print("\n--- 迴圈 (Loops) ---\n")
+
+# 遍歷串列
+print("遍歷遊戲清單:")
+for game in my_games:
+    print(f"- {game}")
+
+# 使用 range() 執行固定次數的迴圈
+print("\n從 0 到 4 數數:")
+for i in range(5): # range(5) 會產生 0, 1, 2, 3, 4
+    print(i)
+
+print("\n從 1 到 5 數數:")
+for j in range(1, 6): # range(1, 6) 會產生 1, 2, 3, 4, 5
+    print(j)
+
+# --- 數字總和練習 ---
+print("\n--- 數字總和練習 ---\n")
+
+numbers = [10, 20, 30, 40, 50]
+print(f"要計算總和的數字串列: {numbers}")
+total = 0
+for number in numbers:
+    total += number
+print(f"數字總和是: {total}")
+
+# --- 7. 函式 (Functions) ---
+print("\n--- 函式 (Functions) ---\n")
+
+# 簡單的函式，沒有參數也沒有回傳值
+def greet():
+    print("哈囉！歡迎來到函式世界。")
+
+# 呼叫函式
+greet()
+
+# 帶有參數的函式
+def greet_name(name):
+    print(f"哈囉，{name}！很高興見到你。")
+
+# 呼叫帶參數的函式
+greet_name("David")
+greet_name("Python學習者")
+
+# 帶有參數和回傳值的函式
+def add_numbers(a, b):
+    """這個函式會將兩個數字相加並回傳結果。"""
+    result = a + b
+    return result
+
+# 呼叫帶有回傳值的函式並儲存結果
+sum_result = add_numbers(5, 7)
+print(f"5 + 7 的結果是: {sum_result}")
+
+# 直接在 print 中呼叫函式
+print(f"10 + 20 的結果是: {add_numbers(10, 20)}")
+
+# --- 面積計算函式練習 ---
+print("\n--- 面積計算函式練習 ---\n")
+
+def calculate_area(length, width):
+    return length * width
+
+length = 10
+width = 5
+area_result = calculate_area(length, width)
+print(f"矩形的面積是: {area_result}")
+
+# --- 8. 字典 (Dictionaries) ---
+print("\n--- 字典 (Dictionaries) ---\n")
+
+# 建立一個字典來儲存玩家資訊
+player = {
+    "name": "Hero",
+    "level": 10,
+    "hp": 100,
+    "items": ["劍", "盾牌", "藥水"]
+}
+print(f"玩家資訊: {player}")
+
+# 存取字典中的值 (使用鍵)
+player_name = player["name"]
+player_level = player["level"]
+print(f"玩家名稱: {player_name}, 等級: {player_level}")
+
+# 修改字典中的值
+player["hp"] = 80
+print(f"玩家血量更新為: {player['hp']}") # 修正了這裡的引號問題
+
+# 新增鍵值對
+player["class"] = "戰士"
+print(f"新增職業後的玩家資訊: {player}")
+
+# 遍歷字典的鍵
+print("\n玩家資訊的鍵:")
+for key in player:
+    print(key)
+
+# 遍歷字典的值
+print("\n玩家資訊的值:")
+for value in player.values():
+    print(value)
+
+# 遍歷字典的鍵和值
+print("\n玩家資訊的鍵和值:")
+for key, value in player.items():
+    print(f"{key}: {value}")
