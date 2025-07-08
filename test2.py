@@ -1,7 +1,29 @@
-score = 750
-if score > 1000:
-    print(f"您是超級玩家")
-elif score >= 500 and score <=1000:
-    print(f"您是高級玩家")
-else:
-    print(f"繼續努力")     
+inventory = [
+    {"name": "蘋果", "quantity": 10, "price": 5.0},
+    {"name": "香蕉", "quantity": 5, "price":3.5},
+    {"name": "橘子", "quantity": 8, "price": 4.0},
+]
+print("---簡易庫存管理系統---")
+print("初始庫存:")
+
+def display_inventory(current_inventory):
+    for item in current_inventory:
+        print (f"商品:"{item["name"]},"數量:"{item["quantity"]},"價格:"{item["price"]})
+
+def add_or_update_item(current_inventory, item_name, quantity to add, item_price):
+    found_item = False
+
+    for item in current_ineventory:
+        if item ["name"] == item_name:
+           item ["quantity"] += quantity_to_add
+           found_item = True
+           break
+    if not found_item:
+        new_item = {"name": item_name, :quantity: quantity_to_add, "price"item_price}
+        current_inventory.append(new_item)       
+
+def calculate_total_value(current_inventory):
+    total_value = 0.0
+    for item in current_inventory:
+        total_value += item["quantity"] * item[price]
+        return total_value
