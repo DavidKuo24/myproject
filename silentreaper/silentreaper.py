@@ -1,64 +1,69 @@
-import requests
 import time
-from datetime import datetime
 import random
+import undetected_chromedriver as uc
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from captcha_solver import solve_captcha
 
-# === 設定區 ===
-TICKET_URL = "https://tixcraft.com/"  # 目標票務網站的網址（請替換成實際網址）
-REQUEST_INTERVAL = 0.5  # 每次發送請求的間隔秒數
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-}  # 模擬瀏覽器的 headers，避免被當作機器人擋掉
+TIX_URL = "https://tixcraft.com/activity/detail/25_kai"
 
-# === 檢查是否有票的函式 ===
-def is_ticket_available(html_text):
-    """
-    根據網頁內容判斷是否有票
-    可以依照實際網站的文字做判斷邏輯調整
-    """
-    # 範例：如果沒有看到 "Sold Out" 就代表可能還有票
-    return "Sold Out" not in html_text and "sold out" not in html_text
+def main():
+    options = uc.ChromeOptions()
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-blink-features=AutomationControlled")
 
-# === 嘗試購票的函式 ===
-def attempt_purchase():
-    """
-    發送購票請求
-    這裡的欄位名稱要根據實際網站的表單欄位做調整
-    """
-    purchase_data = {
-        "ticket_id": "123456",   # 假設的欄位，可自行替換
-        "quantity": 1            # 購買數量
-    }
+    driver = uc.Chrome(options=options)
+    driver.get(TIX_URL)
+
+    wait = WebDriverWait(driver, 10)
+
+    # 點擊『立即購票』
     try:
-        response = requests.post(TICKET_URL, headers=HEADERS, data=purchase_data)
-        if response.status_code == 200:
-            print(f"[{datetime.now()}] 成功送出購票請求！")
-        else:
-            print(f"[{datetime.now()}] 購票請求失敗：HTTP 狀態碼 {response.status_code}")
+        buy_now_btn = wait.until(EC.element_to_be_clickable((By.LINK_TEXT, "立即購票")))
+        buy_now_btn.click()
+        print("✅ 點擊立即購票成功")
     except Exception as e:
-        print(f"[{datetime.now()}] 發送購票請求時發生錯誤：{e}")
+        print("❌ 點擊『立即購票』失敗：", e)
+        return
 
-# === 機器人主邏輯 ===
-def ticket_bot():
-    print("🎟 搶票機器人啟動中...")
-    while True:
-        try:
-            response = requests.get(TICKET_URL, headers=HEADERS)
-            if response.status_code == 200:
-                if is_ticket_available(response.text):
-                    print(f"[{datetime.now()}] 偵測到票券！嘗試購票中...")
-                    attempt_purchase()
-                    break  # 購票完後就停止程式
-                else:
-                    print(f"[{datetime.now()}] 尚未開放購票，繼續監控中...")
-            else:
-                print(f"[{datetime.now()}] 網頁載入失敗：HTTP 狀態碼 {response.status_code}")
-        except Exception as e:
-            print(f"[{datetime.now()}] 請求發生錯誤：{e}")
+    # 等待區域出現，然後隨機選可點的票區
+    try:
+        time.sleep(2)
+        area_links = driver.find_elements(By.CSS_SELECTOR, 'a[style*="opacity: 1"]')
+        if area_links:
+            random.choice(area_links).click()
+            print("✅ 隨機選擇票區成功")
+        else:
+            print("❌ 沒有可點選的票區")
+            return
+    except Exception as e:
+        print("❌ 點選票區失敗：", e)
+        return
 
-        delay = random.uniform(0.4, 1.2)  # 模擬人類隨機等待秒數
-        print(f"[{datetime.now()}] 模擬人類等待中... 暫停 {round(delay, 2)} 秒")
-        time.sleep(delay
+    # 等待驗證碼與條款 checkbox 出現
+    try:
+        time.sleep(2)
+        checkbox = driver.find_element(By.ID, "TicketForm_agree")
+        checkbox.click()
+        print("✅ 勾選條款成功")
+
+        captcha_code = solve_captcha(driver)
+        print("🧠 OCR 辨識結果：", captcha_code)
+
+        code_input = driver.find_element(By.ID, "TicketForm_verifyCode")
+        code_input.clear()
+        code_input.send_keys(captcha_code)
+
+        # 送出表單
+        submit_btn = driver.find_element(By.CSS_SELECTOR, "button[type='submit']")
+        submit_btn.click()
+        print("✅ 表單已送出")
+    except Exception as e:
+        print("❌ 驗證碼或送出表單錯誤：", e)
+
+    time.sleep(5)
+    driver.quit()
 
 if __name__ == "__main__":
-    ticket_bot()
+    main()
