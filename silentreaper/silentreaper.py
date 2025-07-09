@@ -11,6 +11,7 @@ import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import Select
 
 # === 設定 Tesseract OCR 路徑（需根據實際安裝位置調整） ===
 pytesseract.pytesseract.tesseract_cmd = r"C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
@@ -93,6 +94,18 @@ for url in ACTIVITIES:
         print("✅ 點選票區")
     except Exception as e:
         print(f"❌ 沒有票區可選：{e}")
+        continue
+
+    # 選擇票數（選第一個 option）
+    try:
+        print("🎟️ 選擇票數...")
+        qty_select = WebDriverWait(driver, 5).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "select[name*='TicketForm']"))
+        )
+        Select(qty_select).select_by_value("1")
+        print("✅ 已選擇票數 1 張")
+    except Exception as e:
+        print(f"❌ 選擇票數失敗：{e}")
         continue
 
     # 驗證碼與送出
