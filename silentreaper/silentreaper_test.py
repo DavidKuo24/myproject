@@ -1,33 +1,38 @@
-import undetected_chromedriver as uc
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from datetime import datetime
+import requests
+import pytesseract
+from PIL import Image
+from io import BytesIO
 
-# 打開瀏覽器（使用 undetected_chromedriver 防偵測）
-options = uc.ChromeOptions()
-options.add_argument("--disable-blink-features=AutomationControlled")
-options.headless = False  # 測試時先打開瀏覽器畫面方便觀察
+# 請改成你自己的 tesseract.exe 路徑
+pytesseract.pytesseract.tesseract_cmd = r"C:\Users\David.Kuo\AppData\Local\Programs\Tesseract-OCR\tesseract.exe"
 
-driver = uc.Chrome(options=options)
+def solve_captcha(driver):
+    try:
+        # Step 1：找到圖片元素，取得 src
+        captcha_img = driver.find_element("id", "TicketForm_verifyCode-image")
+        captcha_src = captcha_img.get_attribute("src")
 
-# 進入活動頁面
-activity_url = "https://tixcraft.com/activity/detail/24_NewYearConcert"
-print(f"[{datetime.now()}] 前往活動頁：{activity_url}")
-driver.get(activity_url)
+        # Step 2：拼接完整 URL（避免只拿到 /ticket/captcha?v=xxx）
+        if captcha_src.startswith("/"):
+            captcha_url = "https://tixcraft.com" + captcha_src
+        else:
+            captcha_url = captcha_src
 
-try:
-    # 等待「立即訂購」按鈕出現，最多等10秒
-    order_button = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.XPATH, "//a[contains(text(),'立即訂購')]"))
-    )
-    print(f"[{datetime.now()}] 找到『立即訂購』按鈕，即將點擊...")
-    order_button.click()
+        print("🔍 驗證碼圖片網址:", captcha_url)
 
-except Exception as e:
-    print(f"[{datetime.now()}] ❌ 無法找到按鈕或點擊失敗：{e}")
+        # Step 3：下載圖片
+        headers = {
+            "User-Agent": "Mozilla/5.0"
+        }
+        response = requests.get(captcha_url, headers=headers)
+        img = Image.open(BytesIO(response.content))
 
-# 暫停5秒觀察點擊後結果
-import time
-time.sleep(5)
-driver.quit()
+        # Step 4：進行 OCR 辨識
+        text = pytesseract.image_to_string(img)
+        cleaned = text.strip().replace(" ", "").replace("\n", "")
+        print("🔎 辨識結果：", cleaned)
+
+        return cleaned
+    except Exception as e:
+        print("⚠️ 辨識驗證碼失敗：", e)
+        return ""
