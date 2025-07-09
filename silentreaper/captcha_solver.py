@@ -1,32 +1,31 @@
-import time
-import pytesseract
 import requests
+import pytesseract
 from PIL import Image
-from io import BytesIO
-from selenium.webdriver.common.by import By
+import os
+import random
+import string
 
-# Tesseract 安裝路徑（請依你本機安裝位置調整）
-pytesseract.pytesseract.tesseract_cmd = r"C:\Users\David.Kuo\AppData\Local\Programs\Tesseract-OCR\tesseract.exe"
+def download_captcha(url, save_path="captcha.png"):
+    headers = {"User-Agent": "Mozilla/5.0", "Referer": "https://tixcraft.com"}
+    response = requests.get(url, headers=headers)
+    with open(save_path, 'wb') as f:
+        f.write(response.content)
+    return save_path
 
-def solve_captcha(driver):
-    # 找到驗證碼圖片並點一下讓它刷新
-    img_element = driver.find_element(By.ID, "TicketForm_verifyCode-image")
-    img_element.click()
-    time.sleep(0.8)  # 等一下刷新完
+def solve_with_ocr(image_path):
+    img = Image.open(image_path).convert("L")
+    text = pytesseract.image_to_string(img, config='--psm 8 -c tessedit_char_whitelist=abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')
+    return text.strip()
 
-    # 抓圖片 src，補上網域
-    src = img_element.get_attribute("src")
-    if src.startswith("/"):
-        src = "https://tixcraft.com" + src
+def is_valid_code(code):
+    return code.isalpha() and 4 <= len(code) <= 6
 
-    # 下載圖片
-    response = requests.get(src, headers={
-        "User-Agent": "Mozilla/5.0"
-    })
+def solve_captcha_full(url):
+    image_path = download_captcha(url)
+    code = solve_with_ocr(image_path)
+    os.remove(image_path)
+    print(f"🧠 OCR 辨識結果：{code}")
 
-    # 用 PIL 開啟圖片
-    img = Image.open(BytesIO(response.content))
-
-    # OCR 辨識
-    text = pytesseract.image_to_string(img).strip()
-    return text
+    if not is_valid_code(code):
+        code = input("✍️ 請手動輸入驗證碼：").strip()
+    return code
